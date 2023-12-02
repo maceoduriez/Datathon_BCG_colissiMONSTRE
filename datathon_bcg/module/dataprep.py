@@ -1,3 +1,7 @@
+import pandas as pd
+import matplotlib as plt
+
+
 def traiter_donnees(df): #bilan de ce qu'on a fait au dessus, sans prendre en compte l'état de l'arc pour l'instant
 
     """
