@@ -41,6 +41,8 @@ def plot_daily_mean(df, column, title):
 
 def node_filter(df, arc_id : str):
 
+    """To take only the node of the scope"""
+
     arc_list = {
         'champs' : {'noeud_amont' : 'Av_Champs_Elysees-Washington', 'noeud_aval' : 'Av_Champs_Elysees-Berri'},
      'convention' : {'noeud_amont' : 'Convention-Blomet', 'noeud_aval' : 'Lecourbe-Convention'},
@@ -50,7 +52,7 @@ def node_filter(df, arc_id : str):
     assert arc_id in arc_list, f'arc_id must be in {arc_list.keys()}'
 
 
-    msk_node = (df['Identifiant noeud amont'] == arc_list[arc_id]['noeud_amont'])&(df['Identifiant noeud aval'] == arc_list[arc_id]['noeud_aval'])
+    msk_node = (df['Libelle noeud amont'] == arc_list[arc_id]['noeud_amont'])&(df['Libelle noeud aval'] == arc_list[arc_id]['noeud_aval'])
 
 
     return df.loc[msk_node]
