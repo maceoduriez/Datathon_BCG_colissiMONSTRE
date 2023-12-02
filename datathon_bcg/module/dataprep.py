@@ -2,7 +2,26 @@ import pandas as pd
 import matplotlib as plt
 
 
-def traiter_donnees(df): #bilan de ce qu'on a fait au dessus, sans prendre en compte l'état de l'arc pour l'instant
+def node_filter(df, arc_id : str):
+
+    """To take only the node of the scope"""
+
+    arc_list = {
+        'champs' : {'noeud_amont' : 'Av_Champs_Elysees-Washington', 'noeud_aval' : 'Av_Champs_Elysees-Berri'},
+     'convention' : {'noeud_amont' : 'Convention-Blomet', 'noeud_aval' : 'Lecourbe-Convention'},
+      'sts' : {'noeud_amont' : 'Sts_Peres-Voltaire', 'noeud_aval' : 'Sts_Peres-Universite'},
+      }
+
+    assert arc_id in arc_list, f'arc_id must be in {arc_list.keys()}'
+
+
+    msk_node = (df['Libelle noeud amont'] == arc_list[arc_id]['noeud_amont'])&(df['Libelle noeud aval'] == arc_list[arc_id]['noeud_aval'])
+
+
+    return df.loc[msk_node]
+
+
+def traiter_donnees(df, arc : str): #bilan de ce qu'on a fait au dessus, sans prendre en compte l'état de l'arc pour l'instant
 
     """
     prend le dataframe tout sale que tu prends en csv et renvoie le dataframe avec les dates en index pour bien tracer et sans utc et garde que les colonnes utiles
@@ -26,8 +45,10 @@ def traiter_donnees(df): #bilan de ce qu'on a fait au dessus, sans prendre en co
     df['timestamp'] = df['timestamp'].dt.tz_localize(None)
     df.set_index('timestamp', inplace=True)
 
-    final_df = completer_heures_manquantes(df)
-    return final_df
+    df_final = completer_heures_manquantes(df)
+    df_final_filter = node_filter(df_final, arc_id=arc)
+
+    return df_final_filter
 
 
 def plot_daily_mean(df, column, title):
@@ -63,20 +84,3 @@ def remplacer_valeurs_manquantes_par_decalage(df):
 
     return df
 
-def node_filter(df, arc_id : str):
-
-    """To take only the node of the scope"""
-
-    arc_list = {
-        'champs' : {'noeud_amont' : 'Av_Champs_Elysees-Washington', 'noeud_aval' : 'Av_Champs_Elysees-Berri'},
-     'convention' : {'noeud_amont' : 'Convention-Blomet', 'noeud_aval' : 'Lecourbe-Convention'},
-      'sts' : {'noeud_amont' : 'Sts_Peres-Voltaire', 'noeud_aval' : 'Sts_Peres-Universite'},
-      }
-
-    assert arc_id in arc_list, f'arc_id must be in {arc_list.keys()}'
-
-
-    msk_node = (df['Libelle noeud amont'] == arc_list[arc_id]['noeud_amont'])&(df['Libelle noeud aval'] == arc_list[arc_id]['noeud_aval'])
-
-
-    return df.loc[msk_node]
