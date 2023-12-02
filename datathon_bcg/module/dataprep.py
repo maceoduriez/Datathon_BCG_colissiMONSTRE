@@ -26,7 +26,8 @@ def traiter_donnees(df, arc : str): #bilan de ce qu'on a fait au dessus, sans pr
     """
     prend le dataframe tout sale que tu prends en csv et renvoie le dataframe avec les dates en index pour bien tracer et sans utc et garde que les colonnes utiles
     """
-
+    #On commence par garder uniquement les noeuds qui nous intéressent
+    df = node_filter(df, arc_id=arc)
     #tri par date
     df = df.sort_values(by=['Date et heure de comptage'], ascending=True)
 
@@ -46,9 +47,9 @@ def traiter_donnees(df, arc : str): #bilan de ce qu'on a fait au dessus, sans pr
     df.set_index('timestamp', inplace=True)
 
     df_final = completer_heures_manquantes(df)
-    df_final_filter = node_filter(df_final, arc_id=arc)
+    
 
-    return df_final_filter
+    return df_final
 
 
 def plot_daily_mean(df, column, title):
