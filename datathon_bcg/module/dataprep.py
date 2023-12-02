@@ -37,3 +37,20 @@ def plot_daily_mean(df, column, title):
     ax.legend()
     plt.xticks(rotation=45)
     plt.show()
+
+
+def node_filter(df, arc_id : str):
+
+    arc_list = {
+        'champs' : {'noeud_amont' : 'Av_Champs_Elysees-Washington', 'noeud_aval' : 'Av_Champs_Elysees-Berri'},
+     'convention' : {'noeud_amont' : 'Convention-Blomet', 'noeud_aval' : 'Lecourbe-Convention'},
+      'sts' : {'noeud_amont' : 'Sts_Peres-Voltaire', 'noeud_aval' : 'Sts_Peres-Universite'},
+      }
+
+    assert arc_id in arc_list, f'arc_id must be in {arc_list.keys()}'
+
+
+    msk_node = (df['Identifiant noeud amont'] == arc_list[arc_id]['noeud_amont'])&(df['Identifiant noeud aval'] == arc_list[arc_id]['noeud_aval'])
+
+
+    return df.loc[msk_node]
