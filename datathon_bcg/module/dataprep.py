@@ -48,3 +48,35 @@ def completer_heures_manquantes(df):
     # Réindexer votre DataFrame pour avoir une série temporelle continue
     continuous_df = df.reindex(full_range)
     return continuous_df
+
+def remplacer_valeurs_manquantes_par_decalage(df):
+    # Décalez les colonnes nécessaires d'une semaine
+    df['taux_occupation_shifted'] = df['taux_occupation'].shift(periods=7, freq='D')
+    df['debit_horaire_shifted'] = df['debit_horaire'].shift(periods=7, freq='D')
+
+    # Remplacez les valeurs manquantes par les valeurs décalées
+    df['taux_occupation'].fillna(df['taux_occupation_shifted'], inplace=True)
+    df['debit_horaire'].fillna(df['debit_horaire_shifted'], inplace=True)
+
+    # Supprimez les colonnes de décalage si vous ne les voulez plus dans le DataFrame final
+    df.drop(['taux_occupation_shifted', 'debit_horaire_shifted'], axis=1, inplace=True)
+
+    return df
+
+def node_filter(df, arc_id : str):
+
+    """To take only the node of the scope"""
+
+    arc_list = {
+        'champs' : {'noeud_amont' : 'Av_Champs_Elysees-Washington', 'noeud_aval' : 'Av_Champs_Elysees-Berri'},
+     'convention' : {'noeud_amont' : 'Convention-Blomet', 'noeud_aval' : 'Lecourbe-Convention'},
+      'sts' : {'noeud_amont' : 'Sts_Peres-Voltaire', 'noeud_aval' : 'Sts_Peres-Universite'},
+      }
+
+    assert arc_id in arc_list, f'arc_id must be in {arc_list.keys()}'
+
+
+    msk_node = (df['Libelle noeud amont'] == arc_list[arc_id]['noeud_amont'])&(df['Libelle noeud aval'] == arc_list[arc_id]['noeud_aval'])
+
+
+    return df.loc[msk_node]
