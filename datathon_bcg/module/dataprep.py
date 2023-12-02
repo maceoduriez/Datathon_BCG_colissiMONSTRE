@@ -25,7 +25,9 @@ def traiter_donnees(df): #bilan de ce qu'on a fait au dessus, sans prendre en co
     df['timestamp'] = df['timestamp'].dt.tz_convert('Europe/Paris')
     df['timestamp'] = df['timestamp'].dt.tz_localize(None)
     df.set_index('timestamp', inplace=True)
-    return df
+
+    final_df = completer_heures_manquantes(df)
+    return final_df
 
 
 def plot_daily_mean(df, column, title):
@@ -37,3 +39,12 @@ def plot_daily_mean(df, column, title):
     ax.legend()
     plt.xticks(rotation=45)
     plt.show()
+
+def completer_heures_manquantes(df):
+    min_time = df.index.min()
+    max_time = df.index.max()
+    full_range = pd.date_range(start=min_time, end=max_time, freq='H')  # 'H' pour une fréquence horaire
+
+    # Réindexer votre DataFrame pour avoir une série temporelle continue
+    continuous_df = df.reindex(full_range)
+    return continuous_df
