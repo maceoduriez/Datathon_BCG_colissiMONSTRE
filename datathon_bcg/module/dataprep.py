@@ -85,3 +85,41 @@ def remplacer_valeurs_manquantes_par_decalage(df):
 
     return df
 
+def clean_meteo(df):
+
+
+    # Réduire le DataFrame aux colonnes spécifiées
+    nouveau_data = df.loc[:, ['Date', 'Précipitations dans la dernière heure', 'Température (°C)']]
+    nouveau_data.dropna(subset=['Date'], inplace=True)
+
+    for i in range (len(nouveau_data)):
+        # Convertir la chaîne en objet datetime
+        date_time_obj = datetime.fromisoformat(nouveau_data['Date'][i])
+
+        # Formatter la date en chaîne au nouveau format AAAA-MM-JJ HH:MM:SS
+        nouveau_format_date = date_time_obj.strftime('%Y-%m-%d %H:%M:%S')
+
+        nouveau_data['Date'][i]=nouveau_format_date
+    nouveau_data['Date'] = pd.to_datetime(nouveau_data['Date'])
+    nouveau_data = nouveau_data.sort_values(by='Date')
+    
+        #renommer les colonnes pour que ce soit pratique
+    nouveau_data = nouveau_data.rename(columns={'Date': 'timestamp'})
+
+
+    nouveau_data['timestamp'] = pd.to_datetime(nouveau_data['timestamp'], utc = True)
+    nouveau_data['timestamp'] = nouveau_data['timestamp'].dt.tz_convert('Europe/Paris')
+    nouveau_data['timestamp'] = nouveau_data['timestamp'].dt.tz_localize(None)
+    nouveau_data.set_index('timestamp', inplace=True)
+    nouveau_data=completer_heures_manquantes(nouveau_data)
+
+    nouveau_data['precipitations'] = nouveau_data['Précipitations dans la dernière heure']
+    nouveau_data['temperature'] = nouveau_data['Température (°C)']
+
+
+    # Interpoler les valeurs manquantes en utilisant les méthodes de remplissage existantes (pad/ffill et backfill/bfill)
+    nouveau_data['precipitations'].fillna(method='bfill', inplace=True)
+    nouveau_data['temperature'].fillna(method='bfill', inplace=True)
+    nouveau_data.drop(columns=['Précipitations dans la dernière heure','Température (°C)'], inplace=True)
+
+    return nouveau_data
