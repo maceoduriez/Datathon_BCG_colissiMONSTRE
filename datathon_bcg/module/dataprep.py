@@ -71,7 +71,25 @@ def load_worksites():
 
     df = pd.read_csv(StringIO(response.text), delimiter=';')
 
-    return df 
+    return df
+
+def clean_worksites_data(df):
+    """cleaning worksites data from API
+
+    Args:
+        df (DataFrame): raw dataframe from load_worksites function
+
+    Returns:
+        DataFrame: dataframe cleaned
+    """
+
+    msk_arc = df['voie'].str.contains('pères|convention|elysées', case=False, na=False)
+
+    colonnes_a_garder = ['date_debut', 'date_fin', 'niveau_perturbation', 'voie', 'impact_circulation']
+    df = df.loc[msk_arc, colonnes_a_garder]
+
+    return df
+
 
 def traiter_donnees(df, arc : str): #bilan de ce qu'on a fait au dessus, sans prendre en compte l'état de l'arc pour l'instant
 
