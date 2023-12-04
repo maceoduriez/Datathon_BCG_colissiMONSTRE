@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib as plt
-import numpy as np
-
+import requests
+from io import StringIO
 
 def node_filter(df, arc_id : str):
 
@@ -16,11 +16,62 @@ def node_filter(df, arc_id : str):
     assert arc_id in arc_list, f'arc_id must be in {arc_list.keys()}'
 
 
-    msk_node = (df['Libelle noeud amont'] == arc_list[arc_id]['noeud_amont'])&(df['Libelle noeud aval'] == arc_list[arc_id]['noeud_aval'])
+    msk_node = (df['libelle_nd_amont'] == arc_list[arc_id]['noeud_amont'])&(df['libelle_nd_aval'] == arc_list[arc_id]['noeud_aval'])
 
 
     return df.loc[msk_node]
 
+def load_traffic_data(arc : str, year : int=None):
+    """download raw traffic data from open data soft API, be aware that it can take a while to download convention
+
+    Args:
+        arc (str): has to be either champs, sts or convention
+
+    Returns:
+        DataFrame: raw dataframe
+    """
+    arc_id = {
+        'champs':'AV_Champs_Elysees',
+        'sts':'Sts_Peres',
+        'convention':'Convention'
+    }
+
+    assert arc in arc_id.keys(), 'arc name is not valid, it has to be convention sts or champs'
+    
+
+    
+    # file too heavy if we don't select upstream node for convention
+    if arc == 'convention':
+        url = 'https://parisdata.opendatasoft.com/api/explore/v2.1/catalog/datasets/comptages-routiers-permanents/exports/csv?refine=libelle%3A%22Convention%22&refine=libelle_nd_amont%3A%22Convention-Blomet%22'
+
+    else : url = f'https://parisdata.opendatasoft.com/api/explore/v2.1/catalog/datasets/comptages-routiers-permanents/exports/csv?refine=libelle%3A%22{arc_id[arc]}%22'
+
+    print(f'loading data for {arc} [...]')
+    response = requests.get(url)
+    response.raise_for_status()
+
+    df = pd.read_csv(StringIO(response.text), delimiter=';')
+
+    df.rename(columns={'t_1h': 'Date et heure de comptage', 'q': 'Débit horaire', 'k':"Taux d'occupation", 'etat_barre':'etat_arc'}, inplace=True)
+
+    return df 
+
+def load_worksites():
+    """download raw worskite obstructing traffic from open data soft API
+
+    Returns:
+        DataFrame: raw dataframe
+    """
+
+    url ='https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/chantiers-perturbants/exports/csv'
+
+    print(f'loading data for worksites [...]')
+    response = requests.get(url)
+    response.raise_for_status()
+
+    df = pd.read_csv(StringIO(response.text), delimiter=';')
+
+    return df 
 
 def traiter_donnees(df, arc : str): #bilan de ce qu'on a fait au dessus, sans prendre en compte l'état de l'arc pour l'instant
 
@@ -33,11 +84,11 @@ def traiter_donnees(df, arc : str): #bilan de ce qu'on a fait au dessus, sans pr
     df = df.sort_values(by=['Date et heure de comptage'], ascending=True)
 
     #on garde que les colonnes qui nous intéressent
-    colonnes_a_garder = ['Libelle', 'Date et heure de comptage','Taux d\'occupation', 'Etat arc', 'Débit horaire']
+    colonnes_a_garder = ['libelle', 'Date et heure de comptage','Taux d\'occupation', 'etat_arc', 'Débit horaire']
     df = df.loc[:,colonnes_a_garder]
 
     #renommer les colonnes pour que ce soit pratique
-    df = df.rename(columns={'Date et heure de comptage': 'timestamp', 'Taux d\'occupation': 'taux_occupation', 'Etat arc': 'etat_arc', 'Débit horaire': 'debit_horaire'})
+    df = df.rename(columns={'Date et heure de comptage': 'timestamp', 'Taux d\'occupation': 'taux_occupation', 'Débit horaire': 'debit_horaire'})
 
     #jsplus pk j'ai fait ça
     df.reset_index(drop=True, inplace=True)
