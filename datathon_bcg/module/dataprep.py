@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib as plt
+import numpy as np
 
 
 def node_filter(df, arc_id : str):
