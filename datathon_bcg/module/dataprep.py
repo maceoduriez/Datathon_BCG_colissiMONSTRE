@@ -56,6 +56,23 @@ def load_traffic_data(arc : str, year : int=None):
 
     return df 
 
+def load_worksites():
+    """download raw worskite obstructing traffic from open data soft API
+
+    Returns:
+        DataFrame: raw dataframe
+    """
+
+    url ='https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/chantiers-perturbants/exports/csv'
+
+    print(f'loading data for worksites [...]')
+    response = requests.get(url)
+    response.raise_for_status()
+
+    df = pd.read_csv(StringIO(response.text), delimiter=';')
+
+    return df 
+
 def traiter_donnees(df, arc : str): #bilan de ce qu'on a fait au dessus, sans prendre en compte l'état de l'arc pour l'instant
 
     """
