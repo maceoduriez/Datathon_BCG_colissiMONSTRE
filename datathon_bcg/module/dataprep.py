@@ -87,6 +87,10 @@ def remplacer_valeurs_manquantes_par_decalage(df):
 
 def clean_meteo(df):
 
+    """
+    Prendre en argument le dataset meteo, rend un dataset clean sans trou avec le même format que la fonction traiter_donner()
+    """
+
 
     # Réduire le DataFrame aux colonnes spécifiées
     nouveau_data = df.loc[:, ['Date', 'Précipitations dans la dernière heure', 'Température (°C)']]
