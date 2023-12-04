@@ -189,3 +189,7 @@ def metrique_rmse(y_pred, arc_id : str):
 
     print(f"RMSE for taux_occupation = {rmse_taux_occupation}", 
           f"RMSE for debit_horaire = {rmse_debit_horaire}")
+    
+def conserver_cinq_derniers_jours(df):
+    nombre_de_lignes_a_garder = 120
+    return df.tail(nombre_de_lignes_a_garder)
