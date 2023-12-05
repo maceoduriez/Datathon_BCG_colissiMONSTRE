@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib as plt
 import requests
 from io import StringIO
+from datetime import datetime
 
 def node_filter(df, arc_id : str):
 
@@ -16,7 +17,7 @@ def node_filter(df, arc_id : str):
     assert arc_id in arc_list, f'arc_id must be in {arc_list.keys()}'
 
 
-    msk_node = (df['libelle_nd_amont'] == arc_list[arc_id]['noeud_amont'])&(df['libelle_nd_aval'] == arc_list[arc_id]['noeud_aval'])
+    msk_node = (df['Libelle noeud amont'] == arc_list[arc_id]['noeud_amont'])&(df['Libelle noeud aval'] == arc_list[arc_id]['noeud_aval'])
 
 
     return df.loc[msk_node]
@@ -97,16 +98,18 @@ def traiter_donnees(df, arc : str): #bilan de ce qu'on a fait au dessus, sans pr
     prend le dataframe tout sale que tu prends en csv et renvoie le dataframe avec les dates en index pour bien tracer et sans utc et garde que les colonnes utiles
     """
     #On commence par garder uniquement les noeuds qui nous intéressent
-    df = node_filter(df, arc_id=arc)
+    if 'Libelle noeud amont' in  df.columns:
+        df = node_filter(df, arc_id=arc)
     #tri par date
+    print('colonnes avant tri : ' + df.columns)
     df = df.sort_values(by=['Date et heure de comptage'], ascending=True)
 
     #on garde que les colonnes qui nous intéressent
-    colonnes_a_garder = ['libelle', 'Date et heure de comptage','Taux d\'occupation', 'etat_arc', 'Débit horaire']
+    colonnes_a_garder = ['Libelle', 'Date et heure de comptage','Taux d\'occupation', 'Etat arc', 'Débit horaire']
     df = df.loc[:,colonnes_a_garder]
 
     #renommer les colonnes pour que ce soit pratique
-    df = df.rename(columns={'Date et heure de comptage': 'timestamp', 'Taux d\'occupation': 'taux_occupation', 'Débit horaire': 'debit_horaire'})
+    df = df.rename(columns={'Date et heure de comptage': 'timestamp', 'Taux d\'occupation': 'taux_occupation', 'Débit horaire': 'debit_horaire', 'Etat arc': 'etat_arc'})
 
     #jsplus pk j'ai fait ça
     df.reset_index(drop=True, inplace=True)
@@ -197,4 +200,9 @@ def clean_meteo(df):
     nouveau_data.drop(columns=['Précipitations dans la dernière heure','Température (°C)'], inplace=True)
 
     return nouveau_data
+
+
+# if __name__ == "__main__":
+#     df2 = traiter_donnees(pd.read_csv('datathon_bcg/data/sts_2023.csv', delimiter=';'), arc='sts')   
+#     print(df2.head())
 

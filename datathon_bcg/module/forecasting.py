@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import dataprep as dp
 
 
 
@@ -19,9 +20,9 @@ def metrique_rmse(y_pred, arc_id : str):
     assert arc_id in arc_list, f'arc_id must be in {arc_list.keys()}'
 
     assert y_pred.shape==(120, 2), 'Len(y) must be 120 (5 days) and two columns'
-
-    y_true=traiter_donnees(pd.read_csv(fr'C:\Users\louis\OneDrive\Documents\CS\BCG Datathon\Datathon_BCG_colissiMONSTRE\datathon_bcg\data\{arc_id}_2023.csv', delimiter=';'), arc=arc_id).drop(columns=['Libelle','etat_arc'])[-120:]
     
+    y_true=dp.traiter_donnees(pd.read_csv(fr'datathon_bcg/data/{arc_id}_2023.csv', delimiter=';'), arc=arc_id).drop(columns=['Libelle','etat_arc'])[-120:]
+    print(y_true.head())
     assert y_pred.index.equals(y_true.index), 'Mauvaises dates'
 
     df1=y_true['debit_horaire']
@@ -68,3 +69,9 @@ def metrique_rmse(y_pred, arc_id : str):
 def conserver_cinq_derniers_jours(df):
     nombre_de_lignes_a_garder = 120
     return df.tail(nombre_de_lignes_a_garder)
+
+# if __name__ == "__main__":
+    sts_df = pd.read_csv('datathon_bcg/data/sts_2023.csv', delimiter=';')
+    sts_df = dp.traiter_donnees(sts_df, arc='sts')
+    sts_df_y_true = conserver_cinq_derniers_jours(sts_df).drop(columns=['Libelle','etat_arc'])
+    billy = metrique_rmse(sts_df_y_true, 'sts')
