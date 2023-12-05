@@ -2,7 +2,6 @@ import pandas as pd
 import matplotlib as plt
 import requests
 from io import StringIO
-from datetime import datetime
 
 def node_filter(df, arc_id : str):
 
@@ -17,7 +16,7 @@ def node_filter(df, arc_id : str):
     assert arc_id in arc_list, f'arc_id must be in {arc_list.keys()}'
 
 
-    msk_node = (df['Libelle noeud amont'] == arc_list[arc_id]['noeud_amont'])&(df['Libelle noeud aval'] == arc_list[arc_id]['noeud_aval'])
+    msk_node = (df['libelle_nd_amont'] == arc_list[arc_id]['noeud_amont'])&(df['libelle_nd_aval'] == arc_list[arc_id]['noeud_aval'])
 
 
     return df.loc[msk_node]
@@ -98,18 +97,16 @@ def traiter_donnees(df, arc : str): #bilan de ce qu'on a fait au dessus, sans pr
     prend le dataframe tout sale que tu prends en csv et renvoie le dataframe avec les dates en index pour bien tracer et sans utc et garde que les colonnes utiles
     """
     #On commence par garder uniquement les noeuds qui nous intéressent
-    if 'Libelle noeud amont' in  df.columns:
-        df = node_filter(df, arc_id=arc)
+    df = node_filter(df, arc_id=arc)
     #tri par date
-    print('colonnes avant tri : ' + df.columns)
     df = df.sort_values(by=['Date et heure de comptage'], ascending=True)
 
     #on garde que les colonnes qui nous intéressent
-    colonnes_a_garder = ['Libelle', 'Date et heure de comptage','Taux d\'occupation', 'Etat arc', 'Débit horaire']
+    colonnes_a_garder = ['libelle', 'Date et heure de comptage','Taux d\'occupation', 'etat_arc', 'Débit horaire']
     df = df.loc[:,colonnes_a_garder]
 
     #renommer les colonnes pour que ce soit pratique
-    df = df.rename(columns={'Date et heure de comptage': 'timestamp', 'Taux d\'occupation': 'taux_occupation', 'Débit horaire': 'debit_horaire', 'Etat arc': 'etat_arc'})
+    df = df.rename(columns={'Date et heure de comptage': 'timestamp', 'Taux d\'occupation': 'taux_occupation', 'Débit horaire': 'debit_horaire'})
 
     #jsplus pk j'ai fait ça
     df.reset_index(drop=True, inplace=True)
@@ -202,7 +199,66 @@ def clean_meteo(df):
     return nouveau_data
 
 
-# if __name__ == "__main__":
-#     df2 = traiter_donnees(pd.read_csv('datathon_bcg/data/sts_2023.csv', delimiter=';'), arc='sts')   
-#     print(df2.head())
+def metrique_rmse(y_pred, arc_id : str):
+     
+    """
+    Mettez votre prediction sous la forme d'un DataFrame de dimensions (120, 2), attention à remettre vos données à la bonne échelle
+    """
 
+
+    arc_list = {
+        'champs' : {'noeud_amont' : 'Av_Champs_Elysees-Washington', 'noeud_aval' : 'Av_Champs_Elysees-Berri'},
+     'convention' : {'noeud_amont' : 'Convention-Blomet', 'noeud_aval' : 'Lecourbe-Convention'},
+      'sts' : {'noeud_amont' : 'Sts_Peres-Voltaire', 'noeud_aval' : 'Sts_Peres-Universite'},
+      }
+
+    assert arc_id in arc_list, f'arc_id must be in {arc_list.keys()}'
+
+    assert y_pred.shape==(120, 2), 'Len(y) must be 120 (5 days) and two columns'
+
+    y_true=traiter_donnees(pd.read_csv(fr'C:\Users\louis\OneDrive\Documents\CS\BCG Datathon\Datathon_BCG_colissiMONSTRE\datathon_bcg\data\{arc_id}_2023.csv', delimiter=';'), arc=arc_id).drop(columns=['Libelle','etat_arc'])[-120:]
+    
+    assert y_pred.index.equals(y_true.index), 'Mauvaises dates'
+
+    df1=y_true['debit_horaire']
+    df2=y_pred['debit_horaire']
+
+    df1, df2 = df1.align(df2, axis=0, join='inner')  # 'axis=0' pour aligner selon les index (lignes), 'join=inner' pour garder uniquement les index en commun
+
+    # Convertir les valeurs en tableaux NumPy pour calculer la RMSE
+    values_df1 = df1.values
+    values_df2 = df2.values
+
+    # Calculer la différence au carré entre les valeurs des deux DataFrames
+    squared_diff = (values_df1 - values_df2) ** 2
+
+    # Calculer la moyenne des différences au carré
+    mse = np.mean(squared_diff)
+
+    # Calculer la racine carrée de l'erreur quadratique moyenne (RMSE)
+    rmse_debit_horaire = np.sqrt(mse)
+
+    df1=y_true['taux_occupation']
+    df2=y_pred['taux_occupation']
+
+    df1, df2 = df1.align(df2, axis=0, join='inner')  # 'axis=0' pour aligner selon les index (lignes), 'join=inner' pour garder uniquement les index en commun
+
+    # Convertir les valeurs en tableaux NumPy pour calculer la RMSE
+    values_df1 = df1.values
+    values_df2 = df2.values
+
+    # Calculer la différence au carré entre les valeurs des deux DataFrames
+    squared_diff = (values_df1 - values_df2) ** 2
+
+    # Calculer la moyenne des différences au carré
+    mse = np.mean(squared_diff)
+
+    # Calculer la racine carrée de l'erreur quadratique moyenne (RMSE)
+    rmse_taux_occupation = np.sqrt(mse)
+
+    print(f"RMSE for taux_occupation = {rmse_taux_occupation}", 
+          f"RMSE for debit_horaire = {rmse_debit_horaire}")
+    
+def conserver_cinq_derniers_jours(df):
+    nombre_de_lignes_a_garder = 120
+    return df.tail(nombre_de_lignes_a_garder)
