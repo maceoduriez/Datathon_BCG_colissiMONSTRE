@@ -97,6 +97,21 @@ def load_worksites():
 
     return df
 
+def extract_worksites(df, arc:str):
+
+    """to extract rows that are relative to a particular arc
+
+    Returns:
+        dataframe: _description_
+    """
+
+    arc_list = ['sts', 'champs', 'convention']
+    assert arc in arc_list, f"arc must be in {arc_list.values}"
+
+    msk = df['voie'].str.contains(arc, case=False)
+
+    return df.loc[msk]
+
 
 def clean_worksites_data(df):
     """cleaning worksites data from API
