@@ -1,9 +1,12 @@
+import numpy as np
 import pandas as pd
 import matplotlib as plt
 import requests
 from io import StringIO
 from datetime import datetime
+from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import OrdinalEncoder
+from sklearn.ensemble import RandomForestRegressor
 
 
 def node_filter(df, arc_id: str):
@@ -235,7 +238,7 @@ def clean_meteo(df):
     return nouveau_data
 
 
-def impute_missing_values(df, max_iter=5, espilon=0.001):
+def impute_missing_values(df, max_iter=5, espilon=0.001, verbose=False):
     performance = {}
     step = +np.inf
     n_iter = 0
@@ -277,8 +280,9 @@ def impute_missing_values(df, max_iter=5, espilon=0.001):
             X.loc[df[col].isnull(), col] = y_pred
 
             # compute error
-        step = sum(performance.values())
-        print(step)
+        if verbose:
+            step = sum(performance.values())
+            print(step)
 
     return X, performance
 
