@@ -21,3 +21,14 @@ This project is part of a BCG X datathon that aims to provide a full solution to
 ***
 To run our predictions, we use the Meta open-source project Prophet. You can find its documentation [there](https://facebook.github.io/prophet/docs/installation.html). It aims to predict time-series and it is particularly efficient with time series that are driven by strong seasonality effects, both daily, monthly and yearly.
 
+
+## Team composition
+***
+Our team is exclusively composed by MEng student from CentraleSupélec. We are all in gap year doing internships in several fields, from finance to consulting or tech. Here is the composition : 
+* Macéo Duriez
+* Louis Sallé-Tourne
+* Lucas Henneçon
+* Amine Rakib
+* Pierre Pelissier
+* Clovis Piedallu
+
