@@ -16,6 +16,7 @@ This project is part of a BCG X datathon that aims to provide a full solution to
 ***
 * The [delivery](datathon_bcg/delivery) folder contains the final notebook used to get the results and also the csv file with the results themselves.
 * The [module](datathon_bcg/module) folder contains every functions needed to run [the result notebook](datathon_bcg/delivery/final_notebook.ipynb)
+* The [data](datathon_bcg/data) folder is old, its first goal was to store the data extracted from [open data website](https://opendata.paris.fr/pages/catalogue/?disjunctive.theme&disjunctive.publisher&sort=modified) but as we wanted to get the most recent data, we wrote function to directly get data from the API
 
 ## Method
 ***
