@@ -1,3 +1,4 @@
+![from_url](https://web-assets.bcg.com/5c/0b/0981441c44409c5140fb87a215f0/bcgx-pressrelease-header-003.jpg)
 # Datathon BCG - Equipe ColissiMONSTRE
 ***
 This repo contains everything needed to make predictions on traffic in Paris from 8 to 12 december 2023. Status update : project is still ongoing
